@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Math Score Predictor</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
+            min-height: 100vh;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #667eea,
+                    #764ba2
+                );
+
+            display: flex;
+
+            justify-content: center;
+
+            align-items: center;
+
+            padding: 30px;
+        }
+
+
+        .container {
+
+            width: 100%;
+
+            max-width: 900px;
+
+            background: white;
+
+            border-radius: 20px;
+
+            padding: 35px;
+
+            box-shadow:
+                0 20px 50px
+                rgba(0,0,0,0.2);
+        }
+
+
+        .header {
+
+            text-align: center;
+
+            margin-bottom: 30px;
+        }
+
+
+        .header h1 {
+
+            font-size: 32px;
+
+            color: #222;
+
+            margin-bottom: 10px;
+        }
+
+
+        .header p {
+
+            color: #777;
+
+            font-size: 15px;
+        }
+
+
+        .form-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, 1fr);
+
+            gap: 20px;
+        }
+
+
+        .form-group {
+
+            display: flex;
+
+            flex-direction: column;
+        }
+
+
+        .form-group.full {
+
+            grid-column: 1 / -1;
+        }
+
+
+        label {
+
+            font-weight: 600;
+
+            margin-bottom: 8px;
+
+            color: #333;
+        }
+
+
+        select,
+        input {
+
+            width: 100%;
+
+            padding: 13px;
+
+            border: 1px solid #ddd;
+
+            border-radius: 10px;
+
+            font-size: 15px;
+
+            outline: none;
+
+            transition: 0.2s;
+        }
+
+
+        select:focus,
+        input:focus {
+
+            border-color: #667eea;
+
+            box-shadow:
+                0 0 0 3px
+                rgba(102,126,234,0.15);
+        }
+
+
+        .score-container {
+
+            margin-top: 25px;
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, 1fr);
+
+            gap: 20px;
+        }
+
+
+        .score-box {
+
+            background: #f7f7ff;
+
+            padding: 18px;
+
+            border-radius: 12px;
+        }
+
+
+        .score-box label {
+
+            display: block;
+        }
+
+
+        .score-range {
+
+            display: flex;
+
+            justify-content:
+                space-between;
+
+            margin-top: 5px;
+
+            color: #777;
+
+            font-size: 12px;
+        }
+
+
+        button {
+
+            width: 100%;
+
+            margin-top: 30px;
+
+            padding: 15px;
+
+            border: none;
+
+            border-radius: 10px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #667eea,
+                    #764ba2
+                );
+
+            color: white;
+
+            font-size: 17px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+            transition: 0.2s;
+        }
+
+
+        button:hover {
+
+            transform:
+                translateY(-2px);
+
+            box-shadow:
+                0 8px 20px
+                rgba(102,126,234,0.3);
+        }
+
+
+        button:disabled {
+
+            opacity: 0.6;
+
+            cursor: not-allowed;
+
+            transform: none;
+        }
+
+
+        .result {
+
+            display: none;
+
+            margin-top: 30px;
+
+            padding: 25px;
+
+            border-radius: 15px;
+
+            text-align: center;
+
+            background: #f0fdf4;
+
+            border: 1px solid #bbf7d0;
+        }
+
+
+        .result h2 {
+
+            color: #166534;
+
+            margin-bottom: 10px;
+        }
+
+
+        .score {
+
+            font-size: 52px;
+
+            font-weight: bold;
+
+            color: #15803d;
+
+            margin: 10px 0;
+        }
+
+
+        .message {
+
+            color: #555;
+
+            font-size: 15px;
+        }
+
+
+        .error {
+
+            display: none;
+
+            margin-top: 20px;
+
+            padding: 15px;
+
+            background: #fef2f2;
+
+            border: 1px solid #fecaca;
+
+            color: #b91c1c;
+
+            border-radius: 10px;
+
+            text-align: center;
+        }
+
+
+        .loading {
+
+            display: none;
+
+            text-align: center;
+
+            margin-top: 20px;
+
+            color: #667eea;
+
+            font-weight: 600;
+        }
+
+
+        @media (max-width: 700px) {
+
+            .form-grid,
+            .score-container {
+
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+
+                padding: 22px;
+            }
+
+            .header h1 {
+
+                font-size: 26px;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+    <div class="header">
+
+        <h1>
+            🎓 Math Score Predictor
+        </h1>
+
+        <p>
+            Predict a student's mathematics score
+            using machine learning
+        </p>
+
+    </div>
+
+
+    <form id="predictionForm">
+
+
+        <div class="form-grid">
+
+
+            <!-- Gender -->
+
+            <div class="form-group">
+
+                <label for="gender">
+                    Gender
+                </label>
+
+                <select id="gender" required>
+
+                    <option value="">
+                        Select Gender
+                    </option>
+
+                    <option value="male">
+                        Male
+                    </option>
+
+                    <option value="female">
+                        Female
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- Race -->
+
+            <div class="form-group">
+
+                <label for="race_ethnicity">
+                    Race / Ethnicity
+                </label>
+
+                <select
+                    id="race_ethnicity"
+                    required
+                >
+
+                    <option value="">
+                        Select Group
+                    </option>
+
+                    <option value="group A">
+                        Group A
+                    </option>
+
+                    <option value="group B">
+                        Group B
+                    </option>
+
+                    <option value="group C">
+                        Group C
+                    </option>
+
+                    <option value="group D">
+                        Group D
+                    </option>
+
+                    <option value="group E">
+                        Group E
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- Parental Education -->
+
+            <div class="form-group full">
+
+                <label
+                    for="parental_level_of_education"
+                >
+                    Parental Level of Education
+                </label>
+
+                <select
+                    id="parental_level_of_education"
+                    required
+                >
+
+                    <option value="">
+                        Select Education
+                    </option>
+
+                    <option value="some high school">
+                        Some High School
+                    </option>
+
+                    <option value="high school">
+                        High School
+                    </option>
+
+                    <option value="some college">
+                        Some College
+                    </option>
+
+                    <option value="associate's degree">
+                        Associate's Degree
+                    </option>
+
+                    <option value="bachelor's degree">
+                        Bachelor's Degree
+                    </option>
+
+                    <option value="master's degree">
+                        Master's Degree
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- Lunch -->
+
+            <div class="form-group">
+
+                <label for="lunch">
+                    Lunch
+                </label>
+
+                <select id="lunch" required>
+
+                    <option value="">
+                        Select Lunch Type
+                    </option>
+
+                    <option value="standard">
+                        Standard
+                    </option>
+
+                    <option value="free/reduced">
+                        Free / Reduced
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- Test Preparation -->
+
+            <div class="form-group">
+
+                <label for="test_preparation_course">
+                    Test Preparation
+                </label>
+
+                <select
+                    id="test_preparation_course"
+                    required
+                >
+
+                    <option value="">
+                        Select Status
+                    </option>
+
+                    <option value="none">
+                        None
+                    </option>
+
+                    <option value="completed">
+                        Completed
+                    </option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+
+        <!-- Scores -->
+
+        <div class="score-container">
+
+
+            <div class="score-box">
+
+                <label for="reading_score">
+                    Reading Score
+                </label>
+
+                <input
+                    type="number"
+                    id="reading_score"
+                    min="0"
+                    max="100"
+                    value="70"
+                    required
+                >
+
+                <div class="score-range">
+
+                    <span>0</span>
+
+                    <span>100</span>
+
+                </div>
+
+            </div>
+
+
+            <div class="score-box">
+
+                <label for="writing_score">
+                    Writing Score
+                </label>
+
+                <input
+                    type="number"
+                    id="writing_score"
+                    min="0"
+                    max="100"
+                    value="70"
+                    required
+                >
+
+                <div class="score-range">
+
+                    <span>0</span>
+
+                    <span>100</span>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+        <button
+            type="submit"
+            id="predictButton"
+        >
+            Predict Math Score
+        </button>
+
+
+    </form>
+
+
+    <div
+        class="loading"
+        id="loading"
+    >
+        🔄 Predicting score...
+    </div>
+
+
+    <div
+        class="error"
+        id="error"
+    ></div>
+
+
+    <div
+        class="result"
+        id="result"
+    >
+
+        <h2>
+            Predicted Mathematics Score
+        </h2>
+
+        <div
+            class="score"
+            id="score"
+        >
+            0
+        </div>
+
+        <div
+            class="message"
+            id="message"
+        ></div>
+
+    </div>
+
+
+</div>
+
+
+<script>
+
+
+const form =
+    document.getElementById(
+        "predictionForm"
+    );
+
+const button =
+    document.getElementById(
+        "predictButton"
+    );
+
+const loading =
+    document.getElementById(
+        "loading"
+    );
+
+const result =
+    document.getElementById(
+        "result"
+    );
+
+const error =
+    document.getElementById(
+        "error"
+    );
+
+const score =
+    document.getElementById(
+        "score"
+    );
+
+const message =
+    document.getElementById(
+        "message"
+    );
+
+
+form.addEventListener(
+    "submit",
+    async function(event) {
+
+        event.preventDefault();
+
+
+        // Hide old messages
+
+        result.style.display =
+            "none";
+
+        error.style.display =
+            "none";
+
+
+        // Disable button
+
+        button.disabled =
+            true;
+
+        loading.style.display =
+            "block";
+
+
+        // Collect input
+
+        const data = {
+
+            gender:
+                document.getElementById(
+                    "gender"
+                ).value,
+
+            race_ethnicity:
+                document.getElementById(
+                    "race_ethnicity"
+                ).value,
+
+            parental_level_of_education:
+                document.getElementById(
+                    "parental_level_of_education"
+                ).value,
+
+            lunch:
+                document.getElementById(
+                    "lunch"
+                ).value,
+
+            test_preparation_course:
+                document.getElementById(
+                    "test_preparation_course"
+                ).value,
+
+            reading_score:
+                Number(
+                    document.getElementById(
+                        "reading_score"
+                    ).value
+                ),
+
+            writing_score:
+                Number(
+                    document.getElementById(
+                        "writing_score"
+                    ).value
+                )
+        };
+
+
+        try {
+
+
+            const response =
+                await fetch(
+                    "/predict",
+                    {
+
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body:
+                            JSON.stringify(data)
+                    }
+                );
+
+
+            const resultData =
+                await response.json();
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    resultData.detail ||
+                    "Prediction failed"
+                );
+
+            }
+
+
+            // Display prediction
+
+            const predictedScore =
+                resultData.math_score;
+
+
+            score.textContent =
+                predictedScore;
+
+
+            // Message
+
+            if (predictedScore >= 80) {
+
+                message.textContent =
+                    "Excellent predicted performance!";
+
+            }
+
+            else if (predictedScore >= 60) {
+
+                message.textContent =
+                    "Good predicted performance.";
+
+            }
+
+            else if (predictedScore >= 40) {
+
+                message.textContent =
+                    "Average predicted performance.";
+
+            }
+
+            else {
+
+                message.textContent =
+                    "The model predicts a lower score.";
+
+            }
+
+
+            result.style.display =
+                "block";
+
+
+        }
+
+        catch (err) {
+
+            error.textContent =
+                "Error: " + err.message;
+
+            error.style.display =
+                "block";
+
+        }
+
+
+        finally {
+
+            button.disabled =
+                false;
+
+            loading.style.display =
+                "none";
+
+        }
+
+    }
+
+);
+
+</script>
+
+
+</body>
+
+</html>
